@@ -15,7 +15,6 @@ type alias Model =
     , newTodo : String
     , selectedTodo : Maybe Todo
     , focus : Bool
-    , focusEdit : Bool 
     }
 
 
@@ -32,7 +31,6 @@ initialModel =
     , newTodo = ""
     , selectedTodo = Nothing
     , focus = False
-    , focusEdit = False
     }
 
 
