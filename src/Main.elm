@@ -5,7 +5,7 @@ import Browser
 import Browser.Events exposing (onKeyPress)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onBlur, onClick, onFocus, onInput)
 import Json.Decode as Decode
 import String exposing (dropRight)
 
@@ -14,6 +14,8 @@ type alias Model =
     { todos : List Todo
     , newTodo : String
     , selectedTodo : Maybe Todo
+    , focus : Bool
+    , focusEdit : Bool 
     }
 
 
@@ -24,12 +26,19 @@ type alias Todo =
     }
 
 
+initialModel : Model
+initialModel =
+    { todos = []
+    , newTodo = ""
+    , selectedTodo = Nothing
+    , focus = False
+    , focusEdit = False
+    }
+
+
 init : ( Model, Cmd Msg )
 init =
-    ( { todos = []
-      , newTodo = ""
-      , selectedTodo = Nothing
-      }
+    ( initialModel
     , Cmd.none
     )
 
@@ -44,6 +53,7 @@ type Msg
     | RemoveTodo
     | RemoveCompleted
     | Clear
+    | Focus
     | NoOp
 
 
@@ -51,13 +61,17 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         AddTodo ->
-            ( { model
-                | todos = model.todos ++ [ { description = model.newTodo, completed = False, editing = False } ]
-                , newTodo = ""
-                , selectedTodo = Nothing
-              }
-            , Cmd.none
-            )
+            if model.focus then
+                ( { model
+                    | todos = model.todos ++ [ { description = model.newTodo, completed = False, editing = False } ]
+                    , newTodo = ""
+                    , selectedTodo = Nothing
+                  }
+                , Cmd.none
+                )
+
+            else
+                ( model, Cmd.none )
 
         UpdateNewTodo newDescription ->
             ( { model | newTodo = newDescription }, Cmd.none )
@@ -154,6 +168,9 @@ update msg model =
         Clear ->
             ( { model | todos = [] }, Cmd.none )
 
+        Focus ->
+            ( { model | focus = not model.focus }, Cmd.none )
+
         NoOp ->
             ( model, Cmd.none )
 
@@ -161,8 +178,8 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ input [ value model.newTodo, onInput UpdateNewTodo, placeholder "Add a new todo item here." ] []
-        , button [ onClick AddTodo ] [ text "Add Todo" ]
+        [ input [ onFocus Focus, onBlur Focus, value model.newTodo, onInput UpdateNewTodo, placeholder "Add a new todo item here." ] []
+        , button [ onFocus Focus, onBlur Focus, onClick AddTodo ] [ text "Add Todo" ]
         , ul []
             (List.indexedMap
                 (\index todo ->
