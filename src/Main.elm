@@ -158,7 +158,7 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div [ ]
-        [ input [ value model.newTodo, onInput UpdateNewTodo ] []
+        [ input [ value model.newTodo, onInput UpdateNewTodo, placeholder "Add a new todo item here." ] []
         , button [ onClick AddTodo ] [ text "Add Todo" ]
         , ul []
             (List.indexedMap
