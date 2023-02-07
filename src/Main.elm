@@ -183,7 +183,7 @@ view model =
                 )
                 model.todos
             )
-        , button [onClick RemoveCompleted ] [text "RemoveCompleted"]
+        , button [onClick RemoveCompleted ] [text "Remove Completed"]
         ]
 
 
