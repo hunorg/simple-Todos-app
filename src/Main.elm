@@ -41,6 +41,7 @@ type Msg
     | EditTodo Int
     | RemoveTodo
     | RemoveCompleted
+    | Clear
 
 
 
@@ -146,6 +147,9 @@ update msg model =
                                 List.filter (\t -> not t.completed) model.todos
                         in 
                         ( { model | todos = newTodos }, Cmd.none)
+                        
+        Clear -> 
+            ( { model | todos = [] }, Cmd.none)
        
 
                     
@@ -184,6 +188,7 @@ view model =
                 model.todos
             )
         , button [onClick RemoveCompleted ] [text "Remove Completed"]
+        , button [onClick Clear ] [text "Clear"]
         ]
 
 
