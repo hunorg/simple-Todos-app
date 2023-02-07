@@ -2,9 +2,11 @@ module Main exposing (..)
 
 import Array
 import Browser
+import Browser.Events exposing (onKeyPress)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Html.Events exposing (onClick, onInput)
+import Json.Decode as Decode
 import String exposing (dropRight)
 
 
@@ -42,7 +44,7 @@ type Msg
     | RemoveTodo
     | RemoveCompleted
     | Clear
-
+    | NoOp
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -61,10 +63,10 @@ update msg model =
             ( { model | newTodo = newDescription }, Cmd.none )
 
         SelectTodo index ->
-            if model.selectedTodo == Nothing then 
-
+            if model.selectedTodo == Nothing then
                 ( { model | selectedTodo = Array.get index (Array.fromList model.todos) }, Cmd.none )
-            else 
+
+            else
                 ( { model | selectedTodo = Nothing }, Cmd.none )
 
         ToggleTodo ->
@@ -72,10 +74,11 @@ update msg model =
                 Just todo ->
                     let
                         newTodo =
-                            if todo.completed then 
+                            if todo.completed then
                                 { todo | description = dropRight 12 todo.description, completed = False }
-                            else 
-                                 { todo | description = todo.description ++ " (completed)", completed = True }
+
+                            else
+                                { todo | description = todo.description ++ " (completed)", completed = True }
 
                         newTodos =
                             List.map
@@ -141,23 +144,23 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
-        RemoveCompleted -> 
-                        let 
-                            newTodos = 
-                                List.filter (\t -> not t.completed) model.todos
-                        in 
-                        ( { model | todos = newTodos }, Cmd.none)
-                        
-        Clear -> 
-            ( { model | todos = [] }, Cmd.none)
-       
+        RemoveCompleted ->
+            let
+                newTodos =
+                    List.filter (\t -> not t.completed) model.todos
+            in
+            ( { model | todos = newTodos }, Cmd.none )
 
-                    
+        Clear ->
+            ( { model | todos = [] }, Cmd.none )
+
+        NoOp ->
+            ( model, Cmd.none )
 
 
 view : Model -> Html Msg
 view model =
-    div [ ]
+    div []
         [ input [ value model.newTodo, onInput UpdateNewTodo, placeholder "Add a new todo item here." ] []
         , button [ onClick AddTodo ] [ text "Add Todo" ]
         , ul []
@@ -177,7 +180,7 @@ view model =
                                     div []
                                         [ button [ onClick (EditTodo index) ] [ text "Edit" ]
                                         , button [ onClick ToggleTodo ] [ text "Completed" ]
-                                        , button [onClick RemoveTodo] [text "Remove"]
+                                        , button [ onClick RemoveTodo ] [ text "Remove" ]
                                         ]
 
                                   else
@@ -187,9 +190,28 @@ view model =
                 )
                 model.todos
             )
-        , button [onClick RemoveCompleted ] [text "Remove Completed"]
-        , button [onClick Clear ] [text "Clear"]
+        , button [ onClick RemoveCompleted ] [ text "Remove Completed" ]
+        , button [ onClick Clear ] [ text "Clear" ]
         ]
+
+
+subscriptions : a -> Sub Msg
+subscriptions _ =
+    onKeyPress (Decode.map submitKey keyDecoder)
+
+
+keyDecoder : Decode.Decoder String
+keyDecoder =
+    Decode.field "key" Decode.string
+
+
+submitKey : String -> Msg
+submitKey key =
+    if key == "Enter" then
+        AddTodo
+
+    else
+        NoOp
 
 
 main : Program () Model Msg
@@ -198,5 +220,6 @@ main =
         { init = \_ -> init
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
+
