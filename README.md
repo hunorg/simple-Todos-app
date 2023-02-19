@@ -1,5 +1,5 @@
-# source-code-for-a-basic-Todos-app-written-in-Elm
+# simple Todos app
 
-todo: styling
+todo: styling, add view-only-completed and view-only-not-completed functionality
 
 https://ellie-app.com/kWdpzxjYkSTa1
